@@ -1,0 +1,17 @@
+ #version 460
+//指定了计算着色器工作组的大小，在x,y方向上只有一个线程
+layout(local_size_x = 1, local_size_y = 1) in;
+//定义了一个名为Data 的缓冲区对象，它包含了一个无符号整型数组val，
+//binding = 0 表示指定了缓冲区绑定到绑定点0 （也就是从缓冲区开始读取）
+layout(binding = 0) buffer Data {
+    uint val[];
+} data[3];//Shader期望有三个这样的缓冲区对象
+
+
+void main()
+{
+    int index = int(gl_GlobalInvocationID.x);//全局调用的ID gl_GlobalInvocationID
+   // 功能就是将前两个数值的相加
+    data[2].val[index] = data[0].val[index] + data[1].val[index];
+}
+
