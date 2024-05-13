@@ -173,11 +173,9 @@ int main() {
     VkQueue queue;
     vkGetDeviceQueue(device, queueFamily, 0, &queue);
 
-
     //到这里第一阶段完成
-
-
-
+    
+    //2.1 准备数据并且上传数据到设备内存
     // Create data
     constexpr uint32_t dataSize = 1'000'000;
     std::vector<uint32_t> dataA(dataSize, 3);
@@ -189,6 +187,7 @@ int main() {
     StorageBuffer<uint32_t> bufferB{ device, physicalDevice, dataB };
     StorageBuffer<uint32_t> bufferC{ device, physicalDevice, dataC };
 
+    //2.2 创建DescriptorPool 和 DescriptorSetLayout  
     // Create descriptor Pool
     VkDescriptorPoolSize poolSize = {};
     poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -210,8 +209,8 @@ int main() {
     // Create descriptor set layout
     VkDescriptorSetLayoutBinding binding = {};
     binding.binding = 0;
-    binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    binding.descriptorCount = 3;
+    binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;//指定描述符类型
+    binding.descriptorCount = 3;//指定描述符数量
     binding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 
     VkDescriptorSetLayoutCreateInfo descSetLayoutInfo = {};
@@ -223,11 +222,11 @@ int main() {
     if (vkCreateDescriptorSetLayout(device, &descSetLayoutInfo, nullptr, &descSetLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor set layout!");
     }
-
-    // Allocate desc set ：DescriptorPool 在DescriptorSetLayout的指导下，分配DescriptorSet。
+   
+    // 2.3 Allocate desc set ：DescriptorPool 在DescriptorSetLayout的指导下，组装 DescriptorSet。
     VkDescriptorSetAllocateInfo descSetInfo = {};
     descSetInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    descSetInfo.descriptorPool = descPool;
+    descSetInfo.descriptorPool = descPool;//指定DescriptorPool
     descSetInfo.descriptorSetCount = 1;//指定只有一个DescriptorSetLayout
     descSetInfo.pSetLayouts = &descSetLayout;
 
@@ -236,8 +235,8 @@ int main() {
         throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
-    //开始填充这些DescriptorSet数据
-    // Update desc set
+    //2.4 开始填充这些Descriptor 和 DescriptorSet数据    
+    // Update desc set：更新Descriptor信息
     std::vector<VkDescriptorBufferInfo> descBufferInfos(3);
     descBufferInfos[0].buffer = bufferA.buffer;//实际的数据
     descBufferInfos[0].offset = 0;
@@ -251,7 +250,7 @@ int main() {
     descBufferInfos[2].offset = 0;
     descBufferInfos[2].range = bufferC.memorySize;
 
-    //只有一个DescriptorSet，有3个Descriptor,每一个Descriptor都是Storage Unifrom类型
+    //只有一个DescriptorSet，有3个Descriptor,每一个Descriptor都是Storage Unifrom类型    
     VkWriteDescriptorSet writeDescSet = {};
     writeDescSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writeDescSet.dstSet = descSet;
@@ -260,16 +259,17 @@ int main() {
     writeDescSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     writeDescSet.descriptorCount = 3;
     writeDescSet.pBufferInfo = descBufferInfos.data();
-
+    //更新DescriptorSet以及里面的Descriptor里面的信息
     vkUpdateDescriptorSets(device, 1, &writeDescSet, 0, nullptr);
 
+    //3.1 读取Shader 代码
     // Create shader module
     std::vector<char> shaderCode = readFile("shaders/compute.spv");
 
     VkShaderModuleCreateInfo shaderModuleInfo = {};
     shaderModuleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     shaderModuleInfo.codeSize = shaderCode.size();
-    shaderModuleInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
+    shaderModuleInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());//这里需要注意： 转换为uint32_t*类型
 
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(device, &shaderModuleInfo, nullptr, &shaderModule) != VK_SUCCESS) {
