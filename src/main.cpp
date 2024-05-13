@@ -262,7 +262,7 @@ int main() {
     //更新DescriptorSet以及里面的Descriptor里面的信息
     vkUpdateDescriptorSets(device, 1, &writeDescSet, 0, nullptr);
 
-    //3.1 读取Shader 代码
+    //3.1 读取Shader 代码以及 创建 ShaderModule模块
     // Create shader module
     std::vector<char> shaderCode = readFile("shaders/compute.spv");
 
@@ -271,6 +271,7 @@ int main() {
     shaderModuleInfo.codeSize = shaderCode.size();
     shaderModuleInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());//这里需要注意： 转换为uint32_t*类型
 
+    
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(device, &shaderModuleInfo, nullptr, &shaderModule) != VK_SUCCESS) {
         throw std::runtime_error("failed to create shader module!");
@@ -279,10 +280,11 @@ int main() {
     // Create compute pipeline
     VkPipelineShaderStageCreateInfo shaderStageInfo = {};
     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;//指定计算管线
     shaderStageInfo.module = shaderModule;
     shaderStageInfo.pName = "main";
 
+    //3.2 创建PipelineLayout资源    
     // Create pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -299,17 +301,13 @@ int main() {
     computePipelineInfo.stage = shaderStageInfo;
     computePipelineInfo.layout = pipelineLayout;
 
-    //创建ComputePipeline 计算管线
+    //3.3 创建ComputePipeline 计算管线   
     VkPipeline pipeline;
     if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &computePipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create compute pipelines!");
     }
 
-    //第二阶段：就是创建到了计算管线
-
-
     //第三阶段就是往计算管线提交命令
-
     //1  Create command pool
     VkCommandPoolCreateInfo commandPoolInfo = {};
     commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
