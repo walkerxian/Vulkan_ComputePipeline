@@ -307,13 +307,12 @@ int main() {
         throw std::runtime_error("failed to create compute pipelines!");
     }
 
-    //第三阶段就是往计算管线提交命令
+    //4.1 创建命令缓冲区池
     //1  Create command pool
     VkCommandPoolCreateInfo commandPoolInfo = {};
     commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    commandPoolInfo.queueFamilyIndex = queueFamily;
-    
+    commandPoolInfo.queueFamilyIndex = queueFamily;    
 
     VkCommandPool commandPool;
     if (vkCreateCommandPool(device, &commandPoolInfo, nullptr, &commandPool) != VK_SUCCESS) {
@@ -321,6 +320,7 @@ int main() {
     }
 
 
+    //4.2 分配具体的命令缓冲区
     // 2 Create command buffer
     VkCommandBufferAllocateInfo commandBufferInfo = {};
     commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -332,7 +332,7 @@ int main() {
     if (vkAllocateCommandBuffers(device, &commandBufferInfo, &commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate command buffers!");
     }
-
+    //4.3 记录命令[启动命令，具体的执行逻辑（绑定管线，绑定DescriptorSet,分发调用线程组）， 结束命令]
     // Record command buffer
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -350,7 +350,7 @@ int main() {
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
-
+    //4.4 将命令缓冲区 提及到 指定的GPU 队列
     // Submit and wait
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -361,13 +361,15 @@ int main() {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
-    vkQueueWaitIdle(queue);
+    vkQueueWaitIdle(queue);//等待GPU队列执行完成
 
+    //读取数据
     std::cout << "result : " << std::endl;
     bufferA.print();
     bufferB.print();
     bufferC.print();
 
+    //程序结束-销毁资源
     vkDestroyShaderModule(device, shaderModule, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyPipeline(device, pipeline, nullptr);
