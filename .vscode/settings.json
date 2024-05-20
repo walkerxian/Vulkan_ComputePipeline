@@ -1,6 +1,11 @@
 {
     "files.associations": {
         "istream": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "iostream": "cpp",
+        "ostream": "cpp",
+        "exception": "cpp",
+        "memory": "cpp",
+        "optional": "cpp"
     }
 }
