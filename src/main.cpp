@@ -201,23 +201,24 @@ int main() {
     descPoolInfo.pPoolSizes = &poolSize;
 
     VkDescriptorPool descPool;
-    //创建描述符池
+    //DescriptorPool
     if (vkCreateDescriptorPool(device, &descPoolInfo, nullptr, &descPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor pool!");
     }
 
-    // Create descriptor set layout
+    // Create a descriptorSetLayoutBinding 
     VkDescriptorSetLayoutBinding binding = {};
     binding.binding = 0;
     binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;//指定描述符类型
     binding.descriptorCount = 3;//指定描述符数量
-    binding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+    binding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;//指定哪个stage使用
 
     VkDescriptorSetLayoutCreateInfo descSetLayoutInfo = {};
     descSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     descSetLayoutInfo.bindingCount = 1;
-    descSetLayoutInfo.pBindings = &binding;
+    descSetLayoutInfo.pBindings = &binding;//添加binding信息
 
+    //Create descriptor set layout
     VkDescriptorSetLayout descSetLayout;
     if (vkCreateDescriptorSetLayout(device, &descSetLayoutInfo, nullptr, &descSetLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor set layout!");
@@ -229,7 +230,7 @@ int main() {
     descSetInfo.descriptorPool = descPool;//指定DescriptorPool
     descSetInfo.descriptorSetCount = 1;//指定只有一个DescriptorSetLayout
     descSetInfo.pSetLayouts = &descSetLayout;
-
+    //Create descriptorSets
     VkDescriptorSet descSet;
     if (vkAllocateDescriptorSets(device, &descSetInfo, &descSet) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate descriptor sets!");
@@ -261,6 +262,7 @@ int main() {
     writeDescSet.pBufferInfo = descBufferInfos.data();
     //更新DescriptorSet以及里面的Descriptor里面的信息
     vkUpdateDescriptorSets(device, 1, &writeDescSet, 0, nullptr);
+    //第二阶段目标就是：创建并初始化DescriptorSets
 
     //3.1 读取Shader 代码以及 创建 ShaderModule模块
     // Create shader module
@@ -277,7 +279,7 @@ int main() {
         throw std::runtime_error("failed to create shader module!");
     }
 
-    // Create compute pipeline
+    // Create compute pipeline : Stage
     VkPipelineShaderStageCreateInfo shaderStageInfo = {};
     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;//指定计算管线
@@ -285,7 +287,7 @@ int main() {
     shaderStageInfo.pName = "main";
 
     //3.2 创建PipelineLayout资源    
-    // Create pipeline layout
+    // Create pipeline layout  ：
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 1;
@@ -298,8 +300,8 @@ int main() {
 
     VkComputePipelineCreateInfo computePipelineInfo = {};
     computePipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-    computePipelineInfo.stage = shaderStageInfo;
-    computePipelineInfo.layout = pipelineLayout;
+    computePipelineInfo.stage = shaderStageInfo;//1：stage
+    computePipelineInfo.layout = pipelineLayout;//2 layout
 
     //3.3 创建ComputePipeline 计算管线   
     VkPipeline pipeline;
@@ -325,7 +327,7 @@ int main() {
     VkCommandBufferAllocateInfo commandBufferInfo = {};
     commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     commandBufferInfo.commandPool = commandPool;//指定CommandPool
-    commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    commandBufferInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;//指定当前CommandBuffer的level类型
     commandBufferInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer;
