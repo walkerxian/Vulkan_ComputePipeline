@@ -1,0 +1,147 @@
+{
+  "Total": {
+    "Blocks": 4, 
+    "Allocations": 6, 
+    "UnusedRanges": 3, 
+    "UsedBytes": 140509280, 
+    "UnusedBytes": 98566048, 
+    "AllocationSize": {"Min": 48, "Avg": 23418213, "Max": 104857600}, 
+    "UnusedRangeSize": {"Min": 23068624, "Avg": 32855349, "Max": 46137344}
+  }, 
+  "Heap 0": {
+    "Size": 8428453888, 
+    "Flags": ["DEVICE_LOCAL"], 
+    "Budget": {
+      "BlockBytes": 100663296, 
+      "AllocationBytes": 25165872, 
+      "Usage": 100663296, 
+      "Budget": 6742763110
+    }, 
+    "Stats": {
+      "Blocks": 2, 
+      "Allocations": 3, 
+      "UnusedRanges": 2, 
+      "UsedBytes": 25165872, 
+      "UnusedBytes": 75497424, 
+      "AllocationSize": {"Min": 48, "Avg": 8388624, "Max": 20971520}, 
+      "UnusedRangeSize": {"Min": 29360080, "Avg": 37748712, "Max": 46137344}
+    }, 
+    "Type 1": {
+      "Flags": ["DEVICE_LOCAL"], 
+      "Stats": {
+        "Blocks": 1, 
+        "Allocations": 1, 
+        "UnusedRanges": 1, 
+        "UsedBytes": 20971520, 
+        "UnusedBytes": 46137344
+      }
+    }, 
+    "Type 4": {
+      "Flags": ["DEVICE_LOCAL", "HOST_VISIBLE", "HOST_COHERENT"], 
+      "Stats": {
+        "Blocks": 1, 
+        "Allocations": 2, 
+        "UnusedRanges": 1, 
+        "UsedBytes": 4194352, 
+        "UnusedBytes": 29360080, 
+        "AllocationSize": {"Min": 48, "Avg": 2097176, "Max": 4194304}
+      }
+    }
+  }, 
+  "Heap 1": {
+    "Size": 8461357056, 
+    "Flags": [], 
+    "Budget": {
+      "BlockBytes": 138412032, 
+      "AllocationBytes": 115343408, 
+      "Usage": 138412032, 
+      "Budget": 6769085644
+    }, 
+    "Stats": {
+      "Blocks": 2, 
+      "Allocations": 3, 
+      "UnusedRanges": 1, 
+      "UsedBytes": 115343408, 
+      "UnusedBytes": 23068624, 
+      "AllocationSize": {"Min": 48, "Avg": 38447803, "Max": 104857600}
+    }, 
+    "Type 0": {
+      "Flags": []
+    }, 
+    "Type 2": {
+      "Flags": ["HOST_VISIBLE", "HOST_COHERENT"], 
+      "Stats": {
+        "Blocks": 1, 
+        "Allocations": 1, 
+        "UnusedRanges": 0, 
+        "UsedBytes": 104857600, 
+        "UnusedBytes": 0
+      }
+    }, 
+    "Type 3": {
+      "Flags": ["HOST_VISIBLE", "HOST_COHERENT", "HOST_CACHED"], 
+      "Stats": {
+        "Blocks": 1, 
+        "Allocations": 2, 
+        "UnusedRanges": 1, 
+        "UsedBytes": 10485808, 
+        "UnusedBytes": 23068624, 
+        "AllocationSize": {"Min": 48, "Avg": 5242904, "Max": 10485760}
+      }
+    }
+  }, 
+  "DedicatedAllocations": {
+    "Type 2": [
+      {"Type": "BUFFER", "Size": 104857600, "CreationFrameIndex": 0, "LastUseFrameIndex": 0, "Usage": 32}
+    ]
+  }, 
+  "DefaultPools": {
+    "Type 1": {
+      "PreferredBlockSize": 268435456, 
+      "Blocks": {
+        "0": {
+          "TotalBytes": 67108864, 
+          "UnusedBytes": 46137344, 
+          "Allocations": 1, 
+          "UnusedRanges": 1, 
+          "Suballocations": [
+            {"Offset": 0, "Type": "BUFFER", "Size": 20971520, "CreationFrameIndex": 0, "LastUseFrameIndex": 0, "Usage": 32}, 
+            {"Offset": 20971520, "Type": "FREE", "Size": 46137344}
+          ]
+        }
+      }
+    }, 
+    "Type 3": {
+      "PreferredBlockSize": 268435456, 
+      "Blocks": {
+        "0": {
+          "TotalBytes": 33554432, 
+          "UnusedBytes": 23068624, 
+          "Allocations": 2, 
+          "UnusedRanges": 1, 
+          "Suballocations": [
+            {"Offset": 0, "Type": "BUFFER", "Size": 48, "CreationFrameIndex": 0, "LastUseFrameIndex": 0, "Usage": 32}, 
+            {"Offset": 48, "Type": "BUFFER", "Size": 10485760, "CreationFrameIndex": 0, "LastUseFrameIndex": 0, "Usage": 32}, 
+            {"Offset": 10485808, "Type": "FREE", "Size": 23068624}
+          ]
+        }
+      }
+    }, 
+    "Type 4": {
+      "PreferredBlockSize": 268435456, 
+      "Blocks": {
+        "0": {
+          "TotalBytes": 33554432, 
+          "UnusedBytes": 29360080, 
+          "Allocations": 2, 
+          "UnusedRanges": 1, 
+          "Suballocations": [
+            {"Offset": 0, "Type": "BUFFER", "Size": 48, "CreationFrameIndex": 0, "LastUseFrameIndex": 0, "Usage": 32}, 
+            {"Offset": 48, "Type": "BUFFER", "Size": 4194304, "CreationFrameIndex": 0, "LastUseFrameIndex": 0, "Usage": 32}, 
+            {"Offset": 4194352, "Type": "FREE", "Size": 29360080}
+          ]
+        }
+      }
+    }
+  }
+}
