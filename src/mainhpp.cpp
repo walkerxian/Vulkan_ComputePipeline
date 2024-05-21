@@ -29,7 +29,10 @@ int main()
 												  &AppInfo,						// Application Info
 												  Layers.size(),				// Layers count
 												  Layers.data());				// Layers
+		//Create Instance												  
 		vk::Instance Instance = vk::createInstance(InstanceCreateInfo);
+
+
 
 		vk::PhysicalDevice PhysicalDevice = Instance.enumeratePhysicalDevices().front();
 		vk::PhysicalDeviceProperties DeviceProps = PhysicalDevice.getProperties();
@@ -55,6 +58,7 @@ int main()
 														&QueuePriority);
 		vk::DeviceCreateInfo DeviceCreateInfo(vk::DeviceCreateFlags(), // Flags
 											  DeviceQueueCreateInfo);  // Device Queue Create Info struct
+		//Pick a suitable Physical Device											  
 		vk::Device Device = PhysicalDevice.createDevice(DeviceCreateInfo);
 
 		const uint32_t NumElements = 10;
@@ -106,6 +110,7 @@ int main()
 		vk::Buffer InBuffer = InBufferRaw;
 		vk::Buffer OutBuffer = OutBufferRaw;
 
+		//
 		int32_t* InBufferPtr = nullptr;
 		vmaMapMemory(Allocator, InBufferAllocation, reinterpret_cast<void**>(&InBufferPtr));
 		for (int32_t I = 0; I < NumElements; ++I)
@@ -113,6 +118,8 @@ int main()
 			InBufferPtr[I] = I;
 		}
 		vmaUnmapMemory(Allocator, InBufferAllocation);
+
+
 #else
 		vk::Buffer InBuffer = Device.createBuffer(BufferCreateInfo);
 		vk::Buffer OutBuffer = Device.createBuffer(BufferCreateInfo);
@@ -155,6 +162,7 @@ int main()
 		Device.bindBufferMemory(OutBuffer, OutBufferMemory, 0);
 #endif
 
+	
 		std::vector<char> ShaderContents;
 		if (std::ifstream ShaderFile{ "shaders/Square.spv", std::ios::binary | std::ios::ate })
 		{
@@ -167,6 +175,7 @@ int main()
 		vk::ShaderModuleCreateInfo ShaderModuleCreateInfo(vk::ShaderModuleCreateFlags(),								// Flags
 														  ShaderContents.size(),										// Code size
 														  reinterpret_cast<const uint32_t*>(ShaderContents.data()));	// Code
+		//Create a Shader Moudle														  
 		vk::ShaderModule ShaderModule = Device.createShaderModule(ShaderModuleCreateInfo);
 
 		const std::vector<vk::DescriptorSetLayoutBinding> DescriptorSetLayoutBinding = {
@@ -175,6 +184,7 @@ int main()
 		};
 		vk::DescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo(vk::DescriptorSetLayoutCreateFlags(),
 																		DescriptorSetLayoutBinding);
+		//Creae a DescriptorSetLayout 																		
 		vk::DescriptorSetLayout DescriptorSetLayout = Device.createDescriptorSetLayout(DescriptorSetLayoutCreateInfo);
 
 		vk::PipelineLayoutCreateInfo PipelineLayoutCreateInfo(vk::PipelineLayoutCreateFlags(), DescriptorSetLayout);
@@ -188,6 +198,8 @@ int main()
 		vk::ComputePipelineCreateInfo ComputePipelineCreateInfo(vk::PipelineCreateFlags(),	// Flags
 																PipelineShaderCreateInfo,	// Shader Create Info struct
 																PipelineLayout);			// Pipeline Layout
+
+		//Create a Compute Pipeline																
 		vk::Pipeline ComputePipeline = Device.createComputePipeline(PipelineCache, ComputePipelineCreateInfo).value;
 
 		vk::DescriptorPoolSize DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 2);
@@ -195,26 +207,31 @@ int main()
 		vk::DescriptorPool DescriptorPool = Device.createDescriptorPool(DescriptorPoolCreateInfo);
 
 		vk::DescriptorSetAllocateInfo DescriptorSetAllocInfo(DescriptorPool, 1, &DescriptorSetLayout);
-		const std::vector<vk::DescriptorSet> DescriptorSets = Device.allocateDescriptorSets(DescriptorSetAllocInfo);
+		//Create a DescriptorSets and get it.
+		const std::vector<vk::DescriptorSet> DescriptorSets = Device.allocateDescriptorSets(DescriptorSetAllocInfo);		
 		vk::DescriptorSet DescriptorSet = DescriptorSets.front();
+
 		vk::DescriptorBufferInfo InBufferInfo(InBuffer, 0, NumElements * sizeof(int32_t));
 		vk::DescriptorBufferInfo OutBufferInfo(OutBuffer, 0, NumElements * sizeof(int32_t));
-
+		//Fill the data to the descriptor
 		const std::vector<vk::WriteDescriptorSet> WriteDescriptorSets = {
 			{DescriptorSet, 0, 0, 1, vk::DescriptorType::eStorageBuffer, nullptr, &InBufferInfo},
 			{DescriptorSet, 1, 0, 1, vk::DescriptorType::eStorageBuffer, nullptr, &OutBufferInfo},
 		};
 		Device.updateDescriptorSets(WriteDescriptorSets, {});
 
+		//
 		vk::CommandPoolCreateInfo CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), ComputeQueueFamilyIndex);
 		vk::CommandPool CommandPool = Device.createCommandPool(CommandPoolCreateInfo);
 
 		vk::CommandBufferAllocateInfo CommandBufferAllocInfo(CommandPool,						// Command Pool
 															 vk::CommandBufferLevel::ePrimary,	// Level
 															 1);							    // Num Command Buffers
+		//Create the CommandBuffer and get it															 
 		const std::vector<vk::CommandBuffer> CmdBuffers = Device.allocateCommandBuffers(CommandBufferAllocInfo);
 		vk::CommandBuffer CmdBuffer = CmdBuffers.front();
 
+		//Setting the CommandBuffer
 		vk::CommandBufferBeginInfo CmdBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
 		CmdBuffer.begin(CmdBufferBeginInfo);
 		CmdBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, ComputePipeline);
@@ -226,6 +243,7 @@ int main()
 		CmdBuffer.dispatch(NumElements, 1, 1);
 		CmdBuffer.end();
 
+		//get the Queue and Fence
 		vk::Queue Queue = Device.getQueue(ComputeQueueFamilyIndex, 0);
 		vk::Fence Fence = Device.createFence(vk::FenceCreateInfo());
 
@@ -238,6 +256,7 @@ int main()
 		auto result = Device.waitForFences({ Fence },			// List of fences
 							 true,				// Wait All
 							 uint64_t(-1));		// Timeout
+
 
 #ifdef WITH_VMA
 		vmaMapMemory(Allocator, InBufferAllocation, reinterpret_cast<void**>(&InBufferPtr));
