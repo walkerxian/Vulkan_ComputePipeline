@@ -75,22 +75,28 @@ int main()
 		auto vkBufferCreateInfo = static_cast<VkBufferCreateInfo>(BufferCreateInfo);
 
 #ifdef WITH_VMA
+		//1 create the Vulkan Buffer
+		//2  upload the data to from the CPU to GPU
+
 		VmaAllocatorCreateInfo AllocatorInfo = {};
 		AllocatorInfo.vulkanApiVersion = DeviceProps.apiVersion;
 		AllocatorInfo.physicalDevice = PhysicalDevice;
 		AllocatorInfo.device = Device;
 		AllocatorInfo.instance = Instance;
-
+		//01 创建了一个VMA分配器， 并初始化了相关信息，包括Vulkan API版本，物理设备，设备和实例
 		VmaAllocator Allocator;
 		vmaCreateAllocator(&AllocatorInfo, &Allocator);
+
 
 		VkBuffer InBufferRaw;
 		VkBuffer OutBufferRaw;
 
 		VmaAllocationCreateInfo AllocationInfo = {};
-		AllocationInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+		//02 分配了两个Vulkan缓冲区，InBufferRaw用于CPU到GPU的数据传输
+		//OutBufferRaw用于GPU到CPU的数据传输
 
-		VmaAllocation InBufferAllocation;
+		AllocationInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+		VmaAllocation InBufferAllocation;		
 		vmaCreateBuffer(Allocator,
 						&vkBufferCreateInfo,
 						&AllocationInfo,
@@ -106,17 +112,20 @@ int main()
 						&OutBufferRaw,
 						&OutBufferAllocation,
 						nullptr);
-
+		//03 将Vulkan原始缓冲区（InBufferRaw和OutBufferRaw)转换为 Vulkan C++封装类
 		vk::Buffer InBuffer = InBufferRaw;
 		vk::Buffer OutBuffer = OutBufferRaw;
 
-		//
+		//Upload data from CPU to GPU
 		int32_t* InBufferPtr = nullptr;
+		//将GPU的内存映射到CPU内存空间，并使用InBufferPtr访问映射内存
 		vmaMapMemory(Allocator, InBufferAllocation, reinterpret_cast<void**>(&InBufferPtr));
+		
 		for (int32_t I = 0; I < NumElements; ++I)
 		{
-			InBufferPtr[I] = I;
+			InBufferPtr[I] = I;//将数据写入到映射内存
 		}
+		//取消映射
 		vmaUnmapMemory(Allocator, InBufferAllocation);
 
 
@@ -259,6 +268,8 @@ int main()
 
 
 #ifdef WITH_VMA
+//
+		//将内存映射到CPU,然后通过一个循环打印出InBufferPtr指向的内存中的数据，然后取消映射
 		vmaMapMemory(Allocator, InBufferAllocation, reinterpret_cast<void**>(&InBufferPtr));
 		for (uint32_t I = 0; I < NumElements; ++I)
 		{
@@ -267,6 +278,7 @@ int main()
 		std::cout << std::endl;
 		vmaUnmapMemory(Allocator, InBufferAllocation);
 
+		//通过vmaMapMemory将另一个缓冲区的内存映射到CPU,然后通过循环打印出OutBufferPtr指向的内存中的数据
 		int32_t* OutBufferPtr = nullptr;
 		vmaMapMemory(Allocator, OutBufferAllocation, reinterpret_cast<void**>(&OutBufferPtr));
 		for (uint32_t I = 0; I < NumElements; ++I)
@@ -276,12 +288,13 @@ int main()
 		std::cout << std::endl;
 		vmaUnmapMemory(Allocator, OutBufferAllocation);
 
+		//用于存储Vulkan缓冲区的相关信息以及其分配的内存
 		struct BufferInfo
 		{
 			VkBuffer Buffer;
 			VmaAllocation Allocation;
 		};
-
+		//定义一个lambda的函数，用于根据指定的参数分配Vulkan缓冲区，并返回其相关信息
 		// Lets allocate a couple of buffers to see how they are layed out in memory
 		auto AllocateBuffer = [Allocator, ComputeQueueFamilyIndex](size_t SizeInBytes, VmaMemoryUsage Usage)
 		{
@@ -309,19 +322,22 @@ int main()
 
 			return Info;
 		};
-
+		//销毁相关的缓冲区
 		auto DestroyBuffer = [Allocator](BufferInfo Info)
 		{
 			vmaDestroyBuffer(Allocator, Info.Buffer, Info.Allocation);
 		};
 
+		//分配四个不同大小和用途的缓冲区，并存储在B1,B2,B3,B4中
 		constexpr size_t MB = 1024 * 1024;
 		BufferInfo B1 = AllocateBuffer(4 * MB, VMA_MEMORY_USAGE_CPU_TO_GPU);
 		BufferInfo B2 = AllocateBuffer(10 * MB, VMA_MEMORY_USAGE_GPU_TO_CPU);
 		BufferInfo B3 = AllocateBuffer(20 * MB, VMA_MEMORY_USAGE_GPU_ONLY);
 		BufferInfo B4 = AllocateBuffer(100 * MB, VMA_MEMORY_USAGE_CPU_ONLY);
 
+		//在不同的解决调用了类似的代码来记录VMA分配器的统计信息
 		{
+			//通过vmaBuildStatsString 和 vmaFreeStatsString生成并保存VMA分配器的统计信息
 			VmaStats Stats;
 			char* StatsString = nullptr;
 			vmaBuildStatsString(Allocator, &StatsString, true);
@@ -332,6 +348,7 @@ int main()
 			vmaFreeStatsString(Allocator, StatsString);
 		}
 
+		//销毁缓冲区
 		DestroyBuffer(B1);
 		DestroyBuffer(B2);
 		DestroyBuffer(B3);
@@ -356,7 +373,8 @@ int main()
 #endif
 
 #ifdef WITH_VMA
-		char* StatsString = nullptr;
+		//使用Vulkan Memory Allocator（VMA)进行资源清理和统计信息记录
+		char* StatsString = nullptr;//该指针用于存储VMA库生成的统计信息字符串
 		vmaBuildStatsString(Allocator, &StatsString, true);
 		{
 			std::ofstream OutStats{ "VmaStats.json" };
